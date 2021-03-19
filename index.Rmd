@@ -1,0 +1,1274 @@
+---
+title: "Manipulação de dados e Junção Relacional"
+subtitle: "Encontros Síncronos 8 e 9"
+author: 
+  - <br></br>Renata Oliveira
+date: '19/03/21'
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: ["xaringan-themer.css", "slides.css"]
+    nature:
+      ratio: "16:9"
+      highlightLines: true
+      highlightStyle: solarized-light
+      countIncrementalSlides: false
+      slideNumberFormat: |
+         <div class="progress-bar-container">
+           <div class="progress-bar" style="width: calc(%current% / %total% * 100%);">
+           </div>
+         </div>
+
+---
+
+```{r child = "setup.Rmd"}
+```
+
+```{r packages, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(openintro)
+library(kableExtra)
+library(knitr)
+loans_full_schema <- loans_full_schema %>%
+  mutate(grade = factor(grade, ordered = TRUE))
+```
+
+```{r xaringan-tile-view, echo=FALSE}
+xaringanExtra::use_tile_view()
+```
+
+```{r xaringan-editable, echo=FALSE}
+xaringanExtra::use_editable(expires = 1)
+```
+
+```{r xaringan-panelset, echo=FALSE, message=FALSE, warning=FALSE}
+xaringanExtra::use_panelset()
+xaringanExtra::style_panelset_tabs(panel_tab_font_family = "sans-serif")
+```
+
+```{r xaringanExtra-clipboard, echo=FALSE}
+htmltools::tagList(
+  xaringanExtra::use_clipboard(
+    button_text = "<i class=\"fa fa-clipboard\"></i>",
+    success_text = "<i class=\"fa fa-check\" style=\"color: #90BE6D\"></i>",
+    error_text = "<i class=\"fa fa-times-circle\" style=\"color: #F94144\"></i>"
+  ),
+  rmarkdown::html_dependency_font_awesome()
+)
+```
+
+```{r xaringan-fit-screen, echo=FALSE}
+xaringanExtra::use_fit_screen()
+```
+
+```{r xaringan-extra-styles, echo=FALSE}
+xaringanExtra::use_extra_styles(
+  hover_code_line = TRUE,         #<<
+  mute_unhighlighted_code = TRUE  #<<
+)
+```
+
+```{css include=FALSE}
+.panelset {
+   --panel-tab-foreground: currentColor;
+   --panel-tab-background: unset;
+   --panel-tab-active-foreground: currentColor;
+   --panel-tab-active-background: unset;
+   --panel-tab-active-border-color: currentColor;
+   --panel-tab-hover-foreground: currentColor;
+   --panel-tab-hover-background: unset;
+   --panel-tab-hover-border-color: currentColor;
+   --panel-tab-inactive-opacity: 0.5;
+   --panel-tabs-border-bottom: #ddd;
+   --panel-tab-font-family: Sen;
+   --panel-tab-background-color-active: #fffbe0;
+   --panel-tab-border-color-active: #023d4d;
+}
+
+.panelset .panel-tabs .panel-tab > a {
+	color: #023d4d;
+}
+
+.panelset .panel-tabs {
+  font-size: 0.5rem;
+}
+```
+
+
+## Grupos de trabalho:
+
+.small[
+Aline Paula de Oliveira, Ana Carolina Azevedo, Letycia Cabral   
+Como os atributos sociais e econômicas dos países influenciam na transmissão e tratamento da Covid-19?
+
+Rafael Carvalho Andrade, Rafael Caus, Wallace Domiciano   
+Performance de um grupo de alunos esta relacionada a fatores como: formação academica dos pais, preparação para o teste, nivél de alimentação e etc.
+
+Vitória Barbosa, Armstrong Ferreira, Gustavo Oliveira e João Rezende.   
+Associar a quantidade de acidentes por grandes áreas do CNAE e como estes se relacionam com a quantidade de mão de obra empregada nesta atividade, visando apontar quais áreas apresentaram o maior risco para a realização de atividades laborais no Brasil em 2018.
+
+Paulo Roberto, Maria Luiza, Vinicius Schneider, Izabella Cunha    
+Progressão da vacinação contra o COVID-19 ao longo de todo mundo
+
+Ana Paula Reis, Leonardo Caires e Valéria Gomes   
+Vinícolas no Brasil: vale a pena investir?
+]
+
+---
+
+## Planejamento da disciplina
+
+.pull-left[
+### Discussões
+- Trabalhando com múltiplos dataframes
+- Mineração de dados  ?????? 
+    - Análise de cluster
+    - PCA
+    - Análise de texto
+- Ética na análise de dados
+]
+
+.pull-right[
+### Atividades
+26/03
+
+02/04
+
+09/04 - Apresentações
+
+]
+
+---
+
+
+class: center, middle
+
+
+## Retrospecto
+
+---
+
+## Modelo conceitual da análise de dados
+
+![Modelo de Data Science](https://retaoliveira.github.io/relements/figures/dataR.png)
+
+---
+
+## Tipos de dados
+
+- Os tipos de dados mais comuns são `character`, `numeric`, `factor`e `logical`.
+
+## Tipos de classes de objetos no R
+
+- As classes de organização dos dados mais comuns são `vector`, `list`, `matrix` e `dataframe`.
+
+
+---
+
+## RMarkdown
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_graphics("img/render.png")
+```
+.footnote[
+Alison Hill [Teaching in Production](https://rstudio-education.github.io/teaching-in-production/slides/index.html#1)
+]
+
+---
+
+## ggplot2
+
+- ggplot() é a função principal no ggplot2
+- As parcelas são construídas em camadas
+- A estrutura do código para as parcelas pode ser resumida como
+
+```{r eval = FALSE}
+ggplot(data = [dataset], 
+       mapping = aes(x = [x-variable], y = [y-variable])) +
+   geom_xxx() +
+   other options
+```
+
+
+---
+
+## Tidy data
+
+>As famílias infelizes são todas iguais; cada família infeliz é infeliz à sua própria maneira. 
+>
+>Leo Tolstoy
+
+---
+
+.pull-left[
+**Características dos dados tidy:**
+
+- Cada variável forma uma coluna.
+- Cada observação forma uma linha.
+- Livre de linhas/colunas duplicadas.
+- Livre de erros de ortografia
+- Relevante (por exemplo, livre de caracteres especiais)
+- O tipo de dados apropriado para análise
+- Livre de outliers (ou só contém outliers que tenham sido identificados/entendidos), e
+]
+--
+.pull-right[
+**Características dos dados untidy:**
+
+!@#$%^&*()
+]
+
+---
+
+## 
+
+.question[
+O que faz com que estes dados não estejam arrumados?
+]
+
+```{r hyperwar-airplanes-on-hand, echo=FALSE, out.width="90%", fig.align = "center", caption = "WW2 Army Air Force combat aircraft", out.width = "70%"}
+knitr::include_graphics("img/hyperwar-airplanes-on-hand.png")
+```
+
+.footnote[
+Source: [Army Air Forces Statistical Digest, WW II](https://www.ibiblio.org/hyperwar/AAF/StatDigest/aafsd-3.html)
+]
+
+---
+
+.question[
+O que faz com que estes dados não estejam arrumados?
+]
+
+<br>
+
+```{r hiv-est-prevalence-15-49, echo=FALSE, out.width="95%", fig.align = "center", caption = "Estimated HIV prevalence among 15-49 year olds", out.width = "70%"}
+knitr::include_graphics("img/hiv-est-prevalence-15-49.png")
+```
+
+.footnote[
+Source: [Gapminder, Estimated HIV prevalence among 15-49 year olds](https://www.gapminder.org/data)
+]
+
+---
+
+.question[
+O que faz com que estes dados não estejam arrumados?
+]
+
+<br>
+
+```{r us-general-economic-characteristic-acs-2017, echo=FALSE, out.width="95%", fig.align = "center", caption = "US General Economic Characteristics, ACS 2017", out.width = "85%"}
+knitr::include_graphics("img/us-general-economic-characteristic-acs-2017.png")
+```
+
+.footnote[
+Source: [US Census Fact Finder, General Economic Characteristics, ACS 2017](https://factfinder.census.gov/faces/tableservices/jsf/pages/productview.xhtml?pid=ACS_17_5YR_DP03&src=pt)
+]
+
+---
+
+## Exibição vs. resumo de dados
+
+.panelset[
+
+.panel[.panel-name[Saída]
+
+.pull-left[
+```{r echo=FALSE}
+starwars %>%
+  select(name, height, mass)
+```
+]
+.pull-right[
+```{r echo=FALSE}
+starwars %>%
+  group_by(gender) %>%
+  summarize(avg_ht = mean(height, na.rm = TRUE))
+```
+]
+
+]
+
+.panel[.panel-name[Código]
+
+.pull-left[
+```{r eval=FALSE}
+starwars %>%
+  select(name, height, mass)
+```
+]
+.pull-right[
+```{r eval=FALSE}
+starwars %>%
+  group_by(gender) %>%
+  summarize(
+    avg_ht = mean(height, na.rm = TRUE)
+    )
+```
+]
+
+]
+
+]
+
+
+---
+
+class: middle
+
+# Gramática do data wrangling
+
+---
+
+## Gramática do data wrangling
+
+Com base nos conceitos de funções como verbos que permitem a manipulação de dataframes
+
+.pull-left[
+```{r dplyr-part-of-tidyverse, echo=FALSE, out.width="70%", caption = "dplyr is part of the tidyverse"}
+knitr::include_graphics("img/dplyr-part-of-tidyverse.png")
+```
+]
+.pull-right[
+.small[
+- `select`: seleção de colunas pelo nome
+- `arrange`: reorganização das colunas
+- `slice`: seleção de linhas pelo index(es)
+- `filter`: seleção de linhas segundo algum critério
+- `distinct`: aplica um filtro para que não haja colunas duplicadas
+- `mutate`: adição de novas variáveis
+- `summarise`: redução de variáveis a valores
+- `group_by`: operações em agrupamentos
+- ... (many more)
+]
+]
+
+---
+
+## Regras das funções **dplyr**
+
+- O primeiro argumento é **sempre** um dataframe
+- Os argumentos subseqüentes dizem o que fazer com esse dataframe
+- A saída é sempre um dataframe
+- Não modifica os dados originais
+
+---
+
+## Dados: Reservas de hotéis
+
+- Dados de dois hotéis: um resort e um hotel urbano
+- Observações: Cada linha representa uma reserva de hotel
+- Objetivo para a coleta de dados originais: Desenvolvimento de modelos de previsão para classificar a probabilidade de uma reserva de hotel ser cancelada ([Antonia et al., 2019](https://www.sciencedirect.com/science/article/pii/S2352340918315191#bib5))
+
+[Dados](https://cefetmgbr-my.sharepoint.com/:x:/g/personal/renataoliveira_cefetmg_br/EUrBw09_G6BAhuASz0wyAEwBCl_pm5aHc5Ok8m4oAilz8w?e=qieY4H)
+
+```{r message=FALSE}
+library(readr)
+hotels <- read_csv("./data/hotels.csv")
+```
+
+.footnote[
+Source: [TidyTuesday](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-02-11/readme.md)
+]
+
+---
+
+## Primeiro olhar: Variáveis
+
+.small[
+```{r output.lines=18}
+names(hotels)
+```
+]
+
+---
+
+## Segundo olhar: Visão geral
+
+.small[
+```{r output.lines=18}
+glimpse(hotels)
+```
+]
+
+---
+
+## Selecione uma única coluna
+
+Ver apenas `lead_time` (número de dias entre a reserva e a data de chegada):
+
+```{r}
+select(hotels, lead_time)
+```
+
+---
+
+## Selecione uma única coluna
+
+.pull-left[
+```{r eval=FALSE}
+select( #<<
+  hotels, 
+  lead_time
+  )
+```
+]
+.pull-right[
+- Comece com a função (um verbo):  `select()`
+]
+
+---
+
+## Selecione uma única coluna
+
+.pull-left[
+```{r eval=FALSE}
+select( 
+  hotels, #<<
+  lead_time
+  )
+```
+]
+.pull-right[
+- Comece com a função (um verbo): `select()`
+- Primeiro argumento: dataframe com o qual estamos trabalhando, `hotels`.
+]
+
+---
+
+## Select a single column
+
+.pull-left[
+```{r eval=FALSE}
+select( 
+  hotels, 
+  lead_time #<<
+  )
+```
+]
+.pull-right[
+.pull-right[
+- Comece com a função (um verbo): `select()`
+- Primeiro argumento: dataframe com o qual estamos trabalhando, `hotels`.
+- Segundo argumento: variável que queremos acessar, `lead_time`
+]
+
+---
+
+## Select a single column
+
+.pull-left[
+```{r}
+select( 
+  hotels, 
+  lead_time
+  )
+```
+]
+.pull-right[
+- Comece com a função (um verbo): `select()`
+- Primeiro argumento: dataframe com o qual estamos trabalhando, `hotels`.
+- Segundo argumento: variável que queremos acessar, `lead_time`
+- Resultado: data frame com `r nrow(hotels)` linhas e 1 coluna
+]
+
+---
+
+.tip[
+dplyr funções precisam de um data frame como entrada e entregam um data frame.
+]
+
+```{r}
+select(hotels, lead_time)
+```
+
+---
+
+## Selecione várias colunas
+
+
+Veja apenas o tipo de `hotel` e o `lead_time`:
+
+--
+
+.pull-left[
+```{r}
+select(hotels, hotel, lead_time)
+```
+]
+--
+.pull-right[
+.question[
+E se quiséssemos selecionar estas colunas, e depois organizar os dados em ordem decrescente conforme data?
+]
+]
+
+---
+
+## Data wrangling, passo-a-passo
+
+.pull-left[
+Selecione:
+```{r}
+hotels %>%
+  select(hotel, lead_time)
+```
+]
+
+--
+.pull-right[
+Selecione, depois organize:
+```{r}
+hotels %>%
+  select(hotel, lead_time) %>%
+  arrange(desc(lead_time))
+```
+]
+
+---
+
+class: middle
+
+# Pipes
+
+---
+
+## O que é um pipe?
+
+Na programação, `pipe` é uma técnica para passar informações de um processo para outro.
+
+--
+
+.pull-left[
+- Comece com o dataframe `hotels`, e utilize a função `select()`,
+]
+.pull-right[
+.small[
+```{r}
+hotels %>% #<<
+  select(hotel, lead_time) %>%
+  arrange(desc(lead_time))
+```
+]
+]
+
+---
+
+## O que é um pipe?
+
+Na programação, `pipe` é uma técnica para passar informações de um processo para outro.
+
+.pull-left[
+- Comece com o dataframe `hotels`, e utilize a função `select()`,
+- e então, selecione `hotel` and `lead_time`,
+]
+.pull-right[
+.small[
+```{r}
+hotels %>%
+  select(hotel, lead_time) %>% #<<
+  arrange(desc(lead_time))
+```
+]
+]
+
+---
+
+## O que é um pipe?
+
+Na programação, `pipe` é uma técnica para passar informações de um processo para outro.
+
+.pull-left[
+- Comece com o dataframe `hotels`, e utilize a função `select()`,
+- e então, selecione `hotel` and `lead_time`,
+- e então, organize de maneira decrescente conforme o `lead_time`.
+]
+.pull-right[
+.small[
+```{r}
+hotels %>%
+  select(hotel, lead_time) %>% 
+  arrange(desc(lead_time)) #<<
+```
+]
+]
+
+---
+
+## Além
+
+O pipe é implementado no pacote **magrittr**, embora não precisemos carregar este pacote explicitamente, pois **tidyverse** faz isto por nós.
+
+--
+
+.question[
+Algum palpite sobre o porquê do pacote ser chamado de magrittr?
+]
+
+--
+
+.pull-left[
+```{r magritte, echo=FALSE, out.width="90%", caption = "Magritte's pipe"}
+knitr::include_graphics("img/magritte.jpg")
+```
+]
+.pull-right[
+```{r magrittr, echo=FALSE, out.width="100%", caption = "magrittr's pipe"}
+knitr::include_graphics("img/magrittr.jpg")
+```
+]
+
+---
+
+## Como funciona o pipe?
+
+- Você pode pensar na seguinte seqüência de ações - encontrar chaves, destravar o carro, ligar o carro, dirigir para o trabalho, estacionar.
+
+--
+- Expresso como um conjunto de funções aninhadas no pseudo-código R, isto pareceria:
+```{r eval=FALSE}
+park(drive(start_car(find("keys")), to = "work"))
+```
+
+--
+- Escrevê-lo usando pipes dá-lhe uma estrutura mais natural (e mais fácil de ler):
+```{r eval=FALSE}
+find("keys") %>%
+  start_car() %>%
+  drive(to = "work") %>%
+  park()
+```
+
+---
+
+## Uma nota sobre pipes e estratificação
+
+- utilizado principalmente em **dplyr** pipelines, *canalizamos a saída da linha de código anterior como a primeira entrada da próxima linha de código*.
+
+--
+- O `+` utilizado em **ggplot2** é utilizado para "estratificação", *criamos a parcela em camadas, separadas por `+`*
+
+---
+
+## dplyr
+
+.midi[
+`r emo::ji("x")`
+
+```{r error=TRUE}
+hotels +
+  select(hotel, lead_time)
+```
+
+`r emo::ji("white_check_mark")`
+
+```{r eval=FALSE}
+hotels %>%
+  select(hotel, lead_time)
+```
+
+.midi[
+```{r echo=FALSE, output.lines=6}
+hotels %>%
+  select(hotel, lead_time)
+```
+]
+]
+
+---
+
+## ggplot2
+
+.midi[
+`r emo::ji("x")`
+
+```{r error=TRUE}
+ggplot(hotels, aes(x = hotel, fill = deposit_type)) %>%
+  geom_bar()
+```
+
+`r emo::ji("white_check_mark")`
+
+```{r out.width="25%"}
+ggplot(hotels, aes(x = hotel, fill = deposit_type)) +
+  geom_bar()
+```
+]
+
+---
+
+## Gramática do data wrangling
+
+
+- `select`: seleção de colunas pelo nome
+- `arrange`: reorganização das colunas
+- `slice`: seleção de linhas pelo index(es)
+- `filter`: seleção de linhas segundo algum critério
+- `distinct`: aplica um filtro para que não haja colunas duplicadas
+- `mutate`: adição de novas variáveis
+- `summarise`: redução de variáveis a valores
+- `group_by`: operações em agrupamentos
+- ... (many more)
+
+---
+
+## Data wrangling, passo-a-passo
+
+.pull-left[
+Selecione:
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+hotels %>%
+  select(hotel, lead_time)
+```
+]
+
+--
+.pull-right[
+Selecione, depois organize:
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+hotels %>%
+  select(hotel, lead_time) %>%
+  arrange(desc(lead_time))
+```
+]
+
+---
+
+## O que é um pipe?
+
+Na programação, `pipe` é uma técnica para passar informações de um processo para outro.
+
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+hotels %>% #<<
+  select(hotel, lead_time) %>%
+  arrange(desc(lead_time))
+```
+
+---
+
+### Operadores aritméticos R
+
+Operador | Descrição
+---------|-----------
+x + y |	Adição de x com y
+x - y	| Subtração de y em x
+x * y	| Multiplicação de x e y
+x / y	| Divisão de x por y
+x^y ou x**y	| x elevado a y-ésima potência
+x%%y	| Resto da divisão de x por y (módulo)
+x%/%y	| Parte inteira da divisão de x por y
+
+---
+
+### Operadores de comparação no R
+
+Operador	| Significado
+----------|------------
+==	| igual a
+!=	| diferente de
+\>	| maior que
+<	| menor que
+\>=	| maior ou igual a
+<=	| menor ou igual a
+
+> Os operadores de comparação sempre retornam um valor lógico TRUE ou FALSE.
+
+---
+
+
+### Operadores lógicos no R
+
+.small[
+Operador|Descrição|Explicação
+--------|---------|----------
+& |	AND lógico|	Versão vetorizada. Compara dois elementos do tipo vetor e retorna um vetor de TRUEs e FALSEs
+&#124;| OR lógico| Versão vetorizada. Compara dois elementos do tipo vetor e retorna um vetor de TRUEs e FALSEs
+!	|NOT lógico|Negação lógica. Retorna um valor lógico único ou um vetor de TRUE / FALSE.
+]
+
+> Também conhecidos como operadores booleanos, permitem trabalhar com múltiplas condições relacionais na mesma expressão, e retornam valores lógicos verdadeiro ou falso.
+
+---
+
+### Algumas funções estatísticas para sumarização de dados
+
+.pull-left[
+Funções | Descrição
+--------|----------
+`min()`| mínimo  
+`max()`| máximo  
+`range()`| amplitude   
+`mean()`| média   
+`sum()`| soma
+`median()`| mediana
+`sd()`| desvio-padrão
+`IQR()`| intervalo interquantil
+]
+
+.pull-right[
+Funções | Descrição
+--------|----------
+`quantile()`| quartis
+`var()`| variância
+`cor()`| correlação
+`summary()`| métricas de sumarização
+`rowMeans()`| média das linhas
+`colMeans()`| média das colunas
+`rowSums()`| soma das linhas
+`colSums()`| soma das colunas
+]
+---
+
+### Tratamento de dados omissos
+O R permite que sejam armazenados, em vetores e data.frames, o valor `NA` (Not Available), que representa dados que ainda não são conhecidos. 
+
+>`x == NA` trará sempre um resultado FALSE, mesmo que `x` não seja conhecido.
+
+
+---
+
+class: middle
+
+# .hand[Nós...]
+
+.huge[.green[temos]] .hand[vários data frames]
+
+.huge[.pink[queremos]] .hand[juntá-los]
+
+---
+
+```{r include=FALSE}
+professions <- read_csv("https://raw.githubusercontent.com/retaoliveira/relements/main/data/scientists/professions.csv?token=AKYVP2WUGHFUPHO2J4LS7QLALHLAG")
+dates <- read_csv("https://raw.githubusercontent.com/retaoliveira/relements/main/data/scientists/dates.csv?token=AKYVP2VXWOC55E3OYQRYNM3ALHLE2")
+works <- read_csv("https://raw.githubusercontent.com/retaoliveira/relements/main/data/scientists/works.csv?token=AKYVP2W734GE3LRSR3FYGRLALHLG6")
+```
+
+## Data: Mulheres nas ciências 
+
+Informações sobre 10 mulheres nas ciências que mudaram o mundo
+
+.small[
+```{r echo=FALSE}
+professions %>% select(name) %>% kable()
+```
+]
+
+
+.footnote[
+Source: [Discover Magazine](https://www.discovermagazine.com/the-sciences/meet-10-women-in-science-who-changed-the-world)
+]
+
+---
+
+## Entradas
+
+.panelset[
+
+.panel[.panel-name[profissões]
+```{r}
+professions
+```
+]
+
+.panel[.panel-name[datas]
+```{r}
+dates
+```
+]
+
+.panel[.panel-name[trabalhos]
+```{r}
+works
+```
+]
+
+]
+
+---
+
+## Resultado desejado
+
+```{r echo=FALSE}
+professions %>%
+  left_join(dates) %>%
+  left_join(works)
+```
+
+---
+
+## Data frames de entrada
+
+.pull-left[
+```{r}
+names(professions)
+names(dates)
+names(works)
+```
+]
+.pull-right[
+```{r}
+nrow(professions)
+nrow(dates)
+nrow(works)
+```
+]
+
+---
+
+class: middle
+
+# Junção de data frames
+
+---
+
+## Junção de data frames
+
+```{r eval=FALSE}
+something_join(x, y)
+```
+
+- `left_join()`: todas as linhas de x
+- `right_join()`: todas as linhas de y
+- `full_join()`: todas as linhas de x e y
+- `semi_join()`: todas as linhas de x onde há valores correspondentes em y, mantendo apenas as linhas de x
+- `inner_join()`: todas as linhas de x onde há valores correspondentes em y, retornando toda combinação dos diferentes data frames no caso de múltiplas correspondências 
+- `anti_join()`: retorna todas as linhas de x onde não há valores correspondentes em y, sem duplicar linhas em x
+- ...
+ 
+---
+
+## Dados
+
+para os próximos slides...
+
+.pull-left[
+```{r echo=FALSE}
+x <- tibble(
+  id = c(1, 2, 3),
+  value_x = c("x1", "x2", "x3")
+  )
+```
+
+```{r}
+x
+```
+]
+.pull-right[
+```{r echo=FALSE}
+y <- tibble(
+  id = c(1, 2, 4),
+  value_y = c("y1", "y2", "y4")
+  )
+```
+
+```{r}
+y
+```
+]
+
+---
+
+## `left_join()`
+
+.pull-left[
+```{r echo=FALSE, out.width="80%", out.extra ='style="background-color: #FDF6E3"'}
+include_graphics("img/left-join.gif")
+```
+]
+.pull-right[
+```{r}
+left_join(x, y)
+```
+]
+
+---
+
+## `left_join()`
+
+```{r}
+professions %>%
+  left_join(dates) #<<
+```
+
+---
+
+## `right_join()`
+
+.pull-left[
+```{r echo=FALSE, out.width="80%", out.extra ='style="background-color: #FDF6E3"'}
+include_graphics("img/right-join.gif")
+```
+]
+.pull-right[
+```{r}
+right_join(x, y)
+```
+]
+
+---
+
+## `right_join()`
+
+
+```{r}
+professions %>%
+  right_join(dates) #<<
+```
+
+---
+
+## `full_join()`
+
+.pull-left[
+```{r echo=FALSE, out.width="80%", out.extra ='style="background-color: #FDF6E3"'}
+include_graphics("img/full-join.gif")
+```
+]
+.pull-right[
+```{r}
+full_join(x, y)
+```
+]
+
+---
+
+## `full_join()`
+
+```{r}
+dates %>%
+  full_join(works) #<<
+```
+
+---
+
+## `inner_join()`
+
+.pull-left[
+```{r echo=FALSE, out.width="80%", out.extra ='style="background-color: #FDF6E3"'}
+include_graphics("img/inner-join.gif")
+```
+]
+.pull-right[
+```{r}
+inner_join(x, y)
+```
+]
+
+---
+
+## `inner_join()`
+
+```{r}
+dates %>%
+  inner_join(works) #<<
+```
+
+---
+
+## `semi_join()`
+
+.pull-left[
+```{r echo=FALSE, out.width="80%", out.extra ='style="background-color: #FDF6E3"'}
+include_graphics("img/semi-join.gif")
+```
+]
+.pull-right[
+```{r}
+semi_join(x, y)
+```
+]
+
+---
+
+## `semi_join()`
+
+```{r}
+dates %>%
+  semi_join(works) #<<
+```
+
+---
+
+## `anti_join()`
+
+.pull-left[
+```{r echo=FALSE, out.width="80%", out.extra ='style="background-color: #FDF6E3"'}
+include_graphics("img/anti-join.gif")
+```
+]
+.pull-right[
+```{r}
+anti_join(x, y)
+```
+]
+
+---
+
+## `anti_join()`
+
+```{r}
+dates %>%
+  anti_join(works) #<<
+```
+
+---
+
+## Realizando a junção dos dados
+
+```{r}
+professions %>%
+  left_join(dates) %>%
+  left_join(works)
+```
+
+---
+
+class: middle
+
+# Estudo de caso: dados de estudantes
+
+---
+
+## Dados de estudantes
+
+- Temos:
+  - Enrolment: dados oficiais de matrícula da universidade
+  - Survey: dados coletados junto aos estudantes sobre as disciplinas que estão cursando
+- Want: Resultados da pesquisa considerando informações de todos alunos matriculados
+
+--
+
+```{r include=FALSE}
+enrolment <- read_csv("https://raw.githubusercontent.com/retaoliveira/relements/main/data/students/enrolment.csv?token=AKYVP2XAKVW25CYFWARKAITALHLXA")
+survey <- read_csv("https://raw.githubusercontent.com/retaoliveira/relements/main/data/students/survey.csv?token=AKYVP2R5EOMTQP2E6UQQER3ALHLYI")
+```
+
+.pull-left[
+```{r message = FALSE}
+enrolment
+```
+]
+.pull-right[
+```{r message = FALSE}
+survey
+```
+]
+
+---
+
+## Dados dos estudantes
+
+.panelset[
+
+.panel[.panel-name[Em classes]
+```{r}
+enrolment %>% 
+  left_join(survey, by = "id") #<<
+```
+]
+
+.panel[.panel-name[Pesquisa direta]
+```{r}
+enrolment %>% 
+  anti_join(survey, by = "id") #<<
+```
+]
+
+.panel[.panel-name[Abandonaram as disciplinas]
+```{r}
+survey %>% 
+  anti_join(enrolment, by = "id") #<<
+```
+]
+
+]
+
+---
+
+class: middle
+
+# Estudo de caso: venda de alimentos
+
+---
+
+## Vendas de alimentos
+
+- Temos:
+  - Purchases: Uma linha por consumidor, por item.
+  - Prices: uma linha por item na loja
+- Want: receita total
+
+--
+
+```{r include=FALSE}
+purchases <- read_csv("https://raw.githubusercontent.com/retaoliveira/relements/main/data/sales/purchases.csv?token=AKYVP2RRNHFLA6XD5IGXC7DALHLZO")
+prices <- read_csv("https://raw.githubusercontent.com/retaoliveira/relements/main/data/sales/prices.csv?token=AKYVP2XFEQLUO4TX3OYNJB3ALHL2E")
+```
+
+.pull-left[
+```{r message = FALSE}
+purchases
+```
+]
+.pull-right[
+```{r message = FALSE}
+prices
+```
+]
+
+---
+
+## Venda de alimentos
+
+.panelset[
+
+.panel[.panel-name[Receita total]
+.pull-left[
+```{r}
+purchases %>% 
+  left_join(prices) #<<
+```
+]
+.pull-right[
+```{r}
+purchases %>% 
+  left_join(prices) %>%
+  summarise(total_revenue = sum(price)) #<<
+```
+]
+]
+
+.panel[.panel-name[Receita por consumidor]
+
+.pull-left[
+```{r}
+purchases %>% 
+  left_join(prices)
+```
+]
+.pull-right[
+```{r}
+purchases %>% 
+  left_join(prices) %>%
+  group_by(customer_id) %>% #<<
+  summarise(total_revenue = sum(price))
+```
+]
+
+]
+
+]
+
+
+
+---
+
+class: middle
+
+#DÚVIDAS?
+
+**Tarefa da semana** 
+- Projeto integrador 2
+

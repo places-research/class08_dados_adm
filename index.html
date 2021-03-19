@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Manipulação de dados e Junção Relacional</title>
+    <meta charset="utf-8" />
+    <meta name="author" content=" Renata Oliveira" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/font-awesome/css/all.css" rel="stylesheet" />
+    <link href="libs/font-awesome/css/v4-shims.css" rel="stylesheet" />
+    <link href="libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="libs/panelset/panelset.js"></script>
+    <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view/tile-view.js"></script>
+    <script type="application/json" id="xaringanExtra-editable-docid">{"id":"a8c2ac9112954d598f89c2521d3cc0d2","expires":1}</script>
+    <script src="libs/himalaya/himalaya.js"></script>
+    <script src="libs/js-cookie/js.cookie.js"></script>
+    <link href="libs/editable/editable.css" rel="stylesheet" />
+    <script src="libs/editable/editable.js"></script>
+    <script src="libs/clipboard/clipboard.min.js"></script>
+    <link href="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"<i class=\"fa fa-clipboard\"><\/i>","success":"<i class=\"fa fa-check\" style=\"color: #90BE6D\"><\/i>","error":"<i class=\"fa fa-times-circle\" style=\"color: #F94144\"><\/i>"})</script>
+    <script src="libs/xaringanExtra_fit-screen/fit-screen.js"></script>
+    <link href="libs/xaringanExtra-extra-styles/xaringanExtra-extra-styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="slides.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Manipulação de dados e Junção Relacional
+## Encontros Síncronos 8 e 9
+### <br></br>Renata Oliveira
+### 19/03/21
+
+---
+
+
+
+
+
+layout: true
+  
+&lt;div class="my-footer"&gt;
+&lt;span&gt;
+&lt;a href="https://retaoliveira.github.io/places" target="_blank"&gt;https://retaoliveira.github.io/places&lt;/a&gt;
+&lt;/span&gt;
+&lt;/div&gt; 
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Grupos de trabalho:
+
+.small[
+Aline Paula de Oliveira, Ana Carolina Azevedo, Letycia Cabral   
+Como os atributos sociais e econômicas dos países influenciam na transmissão e tratamento da Covid-19?
+
+Rafael Carvalho Andrade, Rafael Caus, Wallace Domiciano   
+Performance de um grupo de alunos esta relacionada a fatores como: formação academica dos pais, preparação para o teste, nivél de alimentação e etc.
+
+Vitória Barbosa, Armstrong Ferreira, Gustavo Oliveira e João Rezende.   
+Associar a quantidade de acidentes por grandes áreas do CNAE e como estes se relacionam com a quantidade de mão de obra empregada nesta atividade, visando apontar quais áreas apresentaram o maior risco para a realização de atividades laborais no Brasil em 2018.
+
+Paulo Roberto, Maria Luiza, Vinicius Schneider, Izabella Cunha    
+Progressão da vacinação contra o COVID-19 ao longo de todo mundo
+
+Ana Paula Reis, Leonardo Caires e Valéria Gomes   
+Vinícolas no Brasil: vale a pena investir?
+]
+
+---
+
+## Planejamento da disciplina
+
+.pull-left[
+### Discussões
+- Trabalhando com múltiplos dataframes
+- Mineração de dados  ?????? 
+    - Análise de cluster
+    - PCA
+    - Análise de texto
+- Ética na análise de dados
+]
+
+.pull-right[
+### Atividades
+26/03
+
+02/04
+
+09/04 - Apresentações
+
+]
+
+---
+
+
+class: center, middle
+
+
+## Retrospecto
+
+---
+
+## Modelo conceitual da análise de dados
+
+![Modelo de Data Science](https://retaoliveira.github.io/relements/figures/dataR.png)
+
+---
+
+## Tipos de dados
+
+- Os tipos de dados mais comuns são `character`, `numeric`, `factor`e `logical`.
+
+## Tipos de classes de objetos no R
+
+- As classes de organização dos dados mais comuns são `vector`, `list`, `matrix` e `dataframe`.
+
+
+---
+
+## RMarkdown
+
+&lt;img src="img/render.png" width="100%" style="display: block; margin: auto;" /&gt;
+.footnote[
+Alison Hill [Teaching in Production](https://rstudio-education.github.io/teaching-in-production/slides/index.html#1)
+]
+
+---
+
+## ggplot2
+
+- ggplot() é a função principal no ggplot2
+- As parcelas são construídas em camadas
+- A estrutura do código para as parcelas pode ser resumida como
+
+
+```r
+ggplot(data = [dataset], 
+       mapping = aes(x = [x-variable], y = [y-variable])) +
+   geom_xxx() +
+   other options
+```
+
+
+---
+
+## Tidy data
+
+&gt;As famílias infelizes são todas iguais; cada família infeliz é infeliz à sua própria maneira. 
+&gt;
+&gt;Leo Tolstoy
+
+---
+
+.pull-left[
+**Características dos dados tidy:**
+
+- Cada variável forma uma coluna.
+- Cada observação forma uma linha.
+- Livre de linhas/colunas duplicadas.
+- Livre de erros de ortografia
+- Relevante (por exemplo, livre de caracteres especiais)
+- O tipo de dados apropriado para análise
+- Livre de outliers (ou só contém outliers que tenham sido identificados/entendidos), e
+]
+--
+.pull-right[
+**Características dos dados untidy:**
+
+!@#$%^&amp;*()
+]
+
+---
+
+## 
+
+.question[
+O que faz com que estes dados não estejam arrumados?
+]
+
+&lt;img src="img/hyperwar-airplanes-on-hand.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+.footnote[
+Source: [Army Air Forces Statistical Digest, WW II](https://www.ibiblio.org/hyperwar/AAF/StatDigest/aafsd-3.html)
+]
+
+---
+
+.question[
+O que faz com que estes dados não estejam arrumados?
+]
+
+&lt;br&gt;
+
+&lt;img src="img/hiv-est-prevalence-15-49.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+.footnote[
+Source: [Gapminder, Estimated HIV prevalence among 15-49 year olds](https://www.gapminder.org/data)
+]
+
+---
+
+.question[
+O que faz com que estes dados não estejam arrumados?
+]
+
+&lt;br&gt;
+
+&lt;img src="img/us-general-economic-characteristic-acs-2017.png" width="85%" style="display: block; margin: auto;" /&gt;
+
+.footnote[
+Source: [US Census Fact Finder, General Economic Characteristics, ACS 2017](https://factfinder.census.gov/faces/tableservices/jsf/pages/productview.xhtml?pid=ACS_17_5YR_DP03&amp;src=pt)
+]
+
+---
+
+## Exibição vs. resumo de dados
+
+.panelset[
+
+.panel[.panel-name[Saída]
+
+.pull-left[
+
+```
+## # A tibble: 87 x 3
+##   name           height  mass
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt;
+## 1 Luke Skywalker    172    77
+## 2 C-3PO             167    75
+## 3 R2-D2              96    32
+## 4 Darth Vader       202   136
+## 5 Leia Organa       150    49
+## 6 Owen Lars         178   120
+## # ... with 81 more rows
+```
+]
+.pull-right[
+
+```
+## # A tibble: 3 x 2
+##   gender    avg_ht
+## * &lt;chr&gt;      &lt;dbl&gt;
+## 1 feminine    165.
+## 2 masculine   177.
+## 3 &lt;NA&gt;        181.
+```
+]
+
+]
+
+.panel[.panel-name[Código]
+
+.pull-left[
+
+```r
+starwars %&gt;%
+  select(name, height, mass)
+```
+]
+.pull-right[
+
+```r
+starwars %&gt;%
+  group_by(gender) %&gt;%
+  summarize(
+    avg_ht = mean(height, na.rm = TRUE)
+    )
+```
+]
+
+]
+
+]
+
+
+---
+
+class: middle
+
+# Gramática do data wrangling
+
+---
+
+## Gramática do data wrangling
+
+Com base nos conceitos de funções como verbos que permitem a manipulação de dataframes
+
+.pull-left[
+&lt;img src="img/dplyr-part-of-tidyverse.png" width="70%" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+.small[
+- `select`: seleção de colunas pelo nome
+- `arrange`: reorganização das colunas
+- `slice`: seleção de linhas pelo index(es)
+- `filter`: seleção de linhas segundo algum critério
+- `distinct`: aplica um filtro para que não haja colunas duplicadas
+- `mutate`: adição de novas variáveis
+- `summarise`: redução de variáveis a valores
+- `group_by`: operações em agrupamentos
+- ... (many more)
+]
+]
+
+---
+
+## Regras das funções **dplyr**
+
+- O primeiro argumento é **sempre** um dataframe
+- Os argumentos subseqüentes dizem o que fazer com esse dataframe
+- A saída é sempre um dataframe
+- Não modifica os dados originais
+
+---
+
+## Dados: Reservas de hotéis
+
+- Dados de dois hotéis: um resort e um hotel urbano
+- Observações: Cada linha representa uma reserva de hotel
+- Objetivo para a coleta de dados originais: Desenvolvimento de modelos de previsão para classificar a probabilidade de uma reserva de hotel ser cancelada ([Antonia et al., 2019](https://www.sciencedirect.com/science/article/pii/S2352340918315191#bib5))
+
+[Dados](https://cefetmgbr-my.sharepoint.com/:x:/g/personal/renataoliveira_cefetmg_br/EUrBw09_G6BAhuASz0wyAEwBCl_pm5aHc5Ok8m4oAilz8w?e=qieY4H)
+
+
+```r
+library(readr)
+hotels &lt;- read_csv("./data/hotels.csv")
+```
+
+.footnote[
+Source: [TidyTuesday](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-02-11/readme.md)
+]
+
+---
+
+## Primeiro olhar: Variáveis
+
+.small[
+
+```r
+names(hotels)
+```
+
+```
+##  [1] "hotel"                         
+##  [2] "is_canceled"                   
+##  [3] "lead_time"                     
+##  [4] "arrival_date_year"             
+##  [5] "arrival_date_month"            
+##  [6] "arrival_date_week_number"      
+##  [7] "arrival_date_day_of_month"     
+##  [8] "stays_in_weekend_nights"       
+##  [9] "stays_in_week_nights"          
+## [10] "adults"                        
+## [11] "children"                      
+## [12] "babies"                        
+## [13] "meal"                          
+## [14] "country"                       
+## [15] "market_segment"                
+## [16] "distribution_channel"          
+## [17] "is_repeated_guest"             
+## [18] "previous_cancellations"        
+...
+```
+]
+
+---
+
+## Segundo olhar: Visão geral
+
+.small[
+
+```r
+glimpse(hotels)
+```
+
+```
+## Rows: 119,390
+## Columns: 32
+## $ hotel                          &lt;chr&gt; "Resort Hotel", "Resort ~
+## $ is_canceled                    &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, ~
+## $ lead_time                      &lt;dbl&gt; 342, 737, 7, 13, 14, 14,~
+## $ arrival_date_year              &lt;dbl&gt; 2015, 2015, 2015, 2015, ~
+## $ arrival_date_month             &lt;chr&gt; "July", "July", "July", ~
+## $ arrival_date_week_number       &lt;dbl&gt; 27, 27, 27, 27, 27, 27, ~
+## $ arrival_date_day_of_month      &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, ~
+## $ stays_in_weekend_nights        &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, ~
+## $ stays_in_week_nights           &lt;dbl&gt; 0, 0, 1, 1, 2, 2, 2, 2, ~
+## $ adults                         &lt;dbl&gt; 2, 2, 1, 1, 2, 2, 2, 2, ~
+## $ children                       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, ~
+## $ babies                         &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, ~
+## $ meal                           &lt;chr&gt; "BB", "BB", "BB", "BB", ~
+## $ country                        &lt;chr&gt; "PRT", "PRT", "GBR", "GB~
+## $ market_segment                 &lt;chr&gt; "Direct", "Direct", "Dir~
+## $ distribution_channel           &lt;chr&gt; "Direct", "Direct", "Dir~
+...
+```
+]
+
+---
+
+## Selecione uma única coluna
+
+Ver apenas `lead_time` (número de dias entre a reserva e a data de chegada):
+
+
+```r
+select(hotels, lead_time)
+```
+
+```
+## # A tibble: 119,390 x 1
+##   lead_time
+##       &lt;dbl&gt;
+## 1       342
+## 2       737
+## 3         7
+## 4        13
+## 5        14
+## 6        14
+## # ... with 119,384 more rows
+```
+
+---
+
+## Selecione uma única coluna
+
+.pull-left[
+
+```r
+*select(
+  hotels, 
+  lead_time
+  )
+```
+]
+.pull-right[
+- Comece com a função (um verbo):  `select()`
+]
+
+---
+
+## Selecione uma única coluna
+
+.pull-left[
+
+```r
+select( 
+* hotels,
+  lead_time
+  )
+```
+]
+.pull-right[
+- Comece com a função (um verbo): `select()`
+- Primeiro argumento: dataframe com o qual estamos trabalhando, `hotels`.
+]
+
+---
+
+## Select a single column
+
+.pull-left[
+
+```r
+select( 
+  hotels, 
+* lead_time
+  )
+```
+]
+.pull-right[
+.pull-right[
+- Comece com a função (um verbo): `select()`
+- Primeiro argumento: dataframe com o qual estamos trabalhando, `hotels`.
+- Segundo argumento: variável que queremos acessar, `lead_time`
+]
+
+---
+
+## Select a single column
+
+.pull-left[
+
+```r
+select( 
+  hotels, 
+  lead_time
+  )
+```
+
+```
+## # A tibble: 119,390 x 1
+##   lead_time
+##       &lt;dbl&gt;
+## 1       342
+## 2       737
+## 3         7
+## 4        13
+## 5        14
+## 6        14
+## # ... with 119,384 more rows
+```
+]
+.pull-right[
+- Comece com a função (um verbo): `select()`
+- Primeiro argumento: dataframe com o qual estamos trabalhando, `hotels`.
+- Segundo argumento: variável que queremos acessar, `lead_time`
+- Resultado: data frame com 119390 linhas e 1 coluna
+]
+
+---
+
+.tip[
+dplyr funções precisam de um data frame como entrada e entregam um data frame.
+]
+
+
+```r
+select(hotels, lead_time)
+```
+
+```
+## # A tibble: 119,390 x 1
+##   lead_time
+##       &lt;dbl&gt;
+## 1       342
+## 2       737
+## 3         7
+## 4        13
+## 5        14
+## 6        14
+## # ... with 119,384 more rows
+```
+
+---
+
+## Selecione várias colunas
+
+
+Veja apenas o tipo de `hotel` e o `lead_time`:
+
+--
+
+.pull-left[
+
+```r
+select(hotels, hotel, lead_time)
+```
+
+```
+## # A tibble: 119,390 x 2
+##   hotel        lead_time
+##   &lt;chr&gt;            &lt;dbl&gt;
+## 1 Resort Hotel       342
+## 2 Resort Hotel       737
+## 3 Resort Hotel         7
+## 4 Resort Hotel        13
+## 5 Resort Hotel        14
+## 6 Resort Hotel        14
+## # ... with 119,384 more rows
+```
+]
+--
+.pull-right[
+.question[
+E se quiséssemos selecionar estas colunas, e depois organizar os dados em ordem decrescente conforme data?
+]
+]
+
+---
+
+## Data wrangling, passo-a-passo
+
+.pull-left[
+Selecione:
+
+```r
+hotels %&gt;%
+  select(hotel, lead_time)
+```
+
+```
+## # A tibble: 119,390 x 2
+##   hotel        lead_time
+##   &lt;chr&gt;            &lt;dbl&gt;
+## 1 Resort Hotel       342
+## 2 Resort Hotel       737
+## 3 Resort Hotel         7
+## 4 Resort Hotel        13
+## 5 Resort Hotel        14
+## 6 Resort Hotel        14
+## # ... with 119,384 more rows
+```
+]
+
+--
+.pull-right[
+Selecione, depois organize:
+
+```r
+hotels %&gt;%
+  select(hotel, lead_time) %&gt;%
+  arrange(desc(lead_time))
+```
+
+```
+## # A tibble: 119,390 x 2
+##   hotel        lead_time
+##   &lt;chr&gt;            &lt;dbl&gt;
+## 1 Resort Hotel       737
+## 2 Resort Hotel       709
+## 3 City Hotel         629
+## 4 City Hotel         629
+## 5 City Hotel         629
+## 6 City Hotel         629
+## # ... with 119,384 more rows
+```
+]
+
+---
+
+class: middle
+
+# Pipes
+
+---
+
+## O que é um pipe?
+
+Na programação, `pipe` é uma técnica para passar informações de um processo para outro.
+
+--
+
+.pull-left[
+- Comece com o dataframe `hotels`, e utilize a função `select()`,
+]
+.pull-right[
+.small[
+
+```r
+*hotels %&gt;%
+  select(hotel, lead_time) %&gt;%
+  arrange(desc(lead_time))
+```
+
+```
+## # A tibble: 119,390 x 2
+##   hotel        lead_time
+##   &lt;chr&gt;            &lt;dbl&gt;
+## 1 Resort Hotel       737
+## 2 Resort Hotel       709
+## 3 City Hotel         629
+## 4 City Hotel         629
+## 5 City Hotel         629
+## 6 City Hotel         629
+## # ... with 119,384 more rows
+```
+]
+]
+
+---
+
+## O que é um pipe?
+
+Na programação, `pipe` é uma técnica para passar informações de um processo para outro.
+
+.pull-left[
+- Comece com o dataframe `hotels`, e utilize a função `select()`,
+- e então, selecione `hotel` and `lead_time`,
+]
+.pull-right[
+.small[
+
+```r
+hotels %&gt;%
+* select(hotel, lead_time) %&gt;%
+  arrange(desc(lead_time))
+```
+
+```
+## # A tibble: 119,390 x 2
+##   hotel        lead_time
+##   &lt;chr&gt;            &lt;dbl&gt;
+## 1 Resort Hotel       737
+## 2 Resort Hotel       709
+## 3 City Hotel         629
+## 4 City Hotel         629
+## 5 City Hotel         629
+## 6 City Hotel         629
+## # ... with 119,384 more rows
+```
+]
+]
+
+---
+
+## O que é um pipe?
+
+Na programação, `pipe` é uma técnica para passar informações de um processo para outro.
+
+.pull-left[
+- Comece com o dataframe `hotels`, e utilize a função `select()`,
+- e então, selecione `hotel` and `lead_time`,
+- e então, organize de maneira decrescente conforme o `lead_time`.
+]
+.pull-right[
+.small[
+
+```r
+hotels %&gt;%
+  select(hotel, lead_time) %&gt;% 
+* arrange(desc(lead_time))
+```
+
+```
+## # A tibble: 119,390 x 2
+##   hotel        lead_time
+##   &lt;chr&gt;            &lt;dbl&gt;
+## 1 Resort Hotel       737
+## 2 Resort Hotel       709
+## 3 City Hotel         629
+## 4 City Hotel         629
+## 5 City Hotel         629
+## 6 City Hotel         629
+## # ... with 119,384 more rows
+```
+]
+]
+
+---
+
+## Além
+
+O pipe é implementado no pacote **magrittr**, embora não precisemos carregar este pacote explicitamente, pois **tidyverse** faz isto por nós.
+
+--
+
+.question[
+Algum palpite sobre o porquê do pacote ser chamado de magrittr?
+]
+
+--
+
+.pull-left[
+&lt;img src="img/magritte.jpg" width="90%" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+&lt;img src="img/magrittr.jpg" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Como funciona o pipe?
+
+- Você pode pensar na seguinte seqüência de ações - encontrar chaves, destravar o carro, ligar o carro, dirigir para o trabalho, estacionar.
+
+--
+- Expresso como um conjunto de funções aninhadas no pseudo-código R, isto pareceria:
+
+```r
+park(drive(start_car(find("keys")), to = "work"))
+```
+
+--
+- Escrevê-lo usando pipes dá-lhe uma estrutura mais natural (e mais fácil de ler):
+
+```r
+find("keys") %&gt;%
+  start_car() %&gt;%
+  drive(to = "work") %&gt;%
+  park()
+```
+
+---
+
+## Uma nota sobre pipes e estratificação
+
+- utilizado principalmente em **dplyr** pipelines, *canalizamos a saída da linha de código anterior como a primeira entrada da próxima linha de código*.
+
+--
+- O `+` utilizado em **ggplot2** é utilizado para "estratificação", *criamos a parcela em camadas, separadas por `+`*
+
+---
+
+## dplyr
+
+.midi[
+❌
+
+
+```r
+hotels +
+  select(hotel, lead_time)
+```
+
+```
+## Error in select(hotel, lead_time): objeto 'hotel' não encontrado
+```
+
+✅
+
+
+```r
+hotels %&gt;%
+  select(hotel, lead_time)
+```
+
+.midi[
+
+```
+## # A tibble: 119,390 x 2
+##   hotel        lead_time
+##   &lt;chr&gt;            &lt;dbl&gt;
+## 1 Resort Hotel       342
+## 2 Resort Hotel       737
+## 3 Resort Hotel         7
+...
+```
+]
+]
+
+---
+
+## ggplot2
+
+.midi[
+❌
+
+
+```r
+ggplot(hotels, aes(x = hotel, fill = deposit_type)) %&gt;%
+  geom_bar()
+```
+
+```
+## Error: `mapping` must be created by `aes()`
+## Did you use %&gt;% instead of +?
+```
+
+✅
+
+
+```r
+ggplot(hotels, aes(x = hotel, fill = deposit_type)) +
+  geom_bar()
+```
+
+&lt;img src="index_files/figure-html/unnamed-chunk-30-1.png" width="25%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Gramática do data wrangling
+
+
+- `select`: seleção de colunas pelo nome
+- `arrange`: reorganização das colunas
+- `slice`: seleção de linhas pelo index(es)
+- `filter`: seleção de linhas segundo algum critério
+- `distinct`: aplica um filtro para que não haja colunas duplicadas
+- `mutate`: adição de novas variáveis
+- `summarise`: redução de variáveis a valores
+- `group_by`: operações em agrupamentos
+- ... (many more)
+
+---
+
+## Data wrangling, passo-a-passo
+
+.pull-left[
+Selecione:
+
+```r
+hotels %&gt;%
+  select(hotel, lead_time)
+```
+]
+
+--
+.pull-right[
+Selecione, depois organize:
+
+```r
+hotels %&gt;%
+  select(hotel, lead_time) %&gt;%
+  arrange(desc(lead_time))
+```
+]
+
+---
+
+## O que é um pipe?
+
+Na programação, `pipe` é uma técnica para passar informações de um processo para outro.
+
+
+
+```r
+*hotels %&gt;%
+  select(hotel, lead_time) %&gt;%
+  arrange(desc(lead_time))
+```
+
+---
+
+### Operadores aritméticos R
+
+Operador | Descrição
+---------|-----------
+x + y |	Adição de x com y
+x - y	| Subtração de y em x
+x * y	| Multiplicação de x e y
+x / y	| Divisão de x por y
+x^y ou x**y	| x elevado a y-ésima potência
+x%%y	| Resto da divisão de x por y (módulo)
+x%/%y	| Parte inteira da divisão de x por y
+
+---
+
+### Operadores de comparação no R
+
+Operador	| Significado
+----------|------------
+==	| igual a
+!=	| diferente de
+\&gt;	| maior que
+&lt;	| menor que
+\&gt;=	| maior ou igual a
+&lt;=	| menor ou igual a
+
+&gt; Os operadores de comparação sempre retornam um valor lógico TRUE ou FALSE.
+
+---
+
+
+### Operadores lógicos no R
+
+.small[
+Operador|Descrição|Explicação
+--------|---------|----------
+&amp; |	AND lógico|	Versão vetorizada. Compara dois elementos do tipo vetor e retorna um vetor de TRUEs e FALSEs
+&amp;#124;| OR lógico| Versão vetorizada. Compara dois elementos do tipo vetor e retorna um vetor de TRUEs e FALSEs
+!	|NOT lógico|Negação lógica. Retorna um valor lógico único ou um vetor de TRUE / FALSE.
+]
+
+&gt; Também conhecidos como operadores booleanos, permitem trabalhar com múltiplas condições relacionais na mesma expressão, e retornam valores lógicos verdadeiro ou falso.
+
+---
+
+### Algumas funções estatísticas para sumarização de dados
+
+.pull-left[
+Funções | Descrição
+--------|----------
+`min()`| mínimo  
+`max()`| máximo  
+`range()`| amplitude   
+`mean()`| média   
+`sum()`| soma
+`median()`| mediana
+`sd()`| desvio-padrão
+`IQR()`| intervalo interquantil
+]
+
+.pull-right[
+Funções | Descrição
+--------|----------
+`quantile()`| quartis
+`var()`| variância
+`cor()`| correlação
+`summary()`| métricas de sumarização
+`rowMeans()`| média das linhas
+`colMeans()`| média das colunas
+`rowSums()`| soma das linhas
+`colSums()`| soma das colunas
+]
+---
+
+### Tratamento de dados omissos
+O R permite que sejam armazenados, em vetores e data.frames, o valor `NA` (Not Available), que representa dados que ainda não são conhecidos. 
+
+&gt;`x == NA` trará sempre um resultado FALSE, mesmo que `x` não seja conhecido.
+
+
+---
+
+class: middle
+
+# .hand[Nós...]
+
+.huge[.green[temos]] .hand[vários data frames]
+
+.huge[.pink[queremos]] .hand[juntá-los]
+
+---
+
+
+
+## Data: Mulheres nas ciências 
+
+Informações sobre 10 mulheres nas ciências que mudaram o mundo
+
+.small[
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; name &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Ada Lovelace &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Marie Curie &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Janaki Ammal &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Chien-Shiung Wu &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Katherine Johnson &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Rosalind Franklin &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Vera Rubin &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Gladys West &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Flossie Wong-Staal &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Jennifer Doudna &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+
+.footnote[
+Source: [Discover Magazine](https://www.discovermagazine.com/the-sciences/meet-10-women-in-science-who-changed-the-world)
+]
+
+---
+
+## Entradas
+
+.panelset[
+
+.panel[.panel-name[profissões]
+
+```r
+professions
+```
+
+```
+## # A tibble: 10 x 2
+##   name              profession           
+##   &lt;chr&gt;             &lt;chr&gt;                
+## 1 Ada Lovelace      Mathematician        
+## 2 Marie Curie       Physicist and Chemist
+## 3 Janaki Ammal      Botanist             
+## 4 Chien-Shiung Wu   Physicist            
+## 5 Katherine Johnson Mathematician        
+## 6 Rosalind Franklin Chemist              
+## # ... with 4 more rows
+```
+]
+
+.panel[.panel-name[datas]
+
+```r
+dates
+```
+
+```
+## # A tibble: 8 x 3
+##   name              birth_year death_year
+##   &lt;chr&gt;                  &lt;dbl&gt;      &lt;dbl&gt;
+## 1 Janaki Ammal            1897       1984
+## 2 Chien-Shiung Wu         1912       1997
+## 3 Katherine Johnson       1918       2020
+## 4 Rosalind Franklin       1920       1958
+## 5 Vera Rubin              1928       2016
+## 6 Gladys West             1930         NA
+## # ... with 2 more rows
+```
+]
+
+.panel[.panel-name[trabalhos]
+
+```r
+works
+```
+
+```
+## # A tibble: 9 x 2
+##   name           known_for                                       
+##   &lt;chr&gt;          &lt;chr&gt;                                           
+## 1 Ada Lovelace   first computer algorithm                        
+## 2 Marie Curie    theory of radioactivity,  discovery of elements~
+## 3 Janaki Ammal   hybrid species, biodiversity protection         
+## 4 Chien-Shiung ~ confim and refine theory of radioactive beta de~
+## 5 Katherine Joh~ calculations of orbital mechanics critical to s~
+## 6 Vera Rubin     existence of dark matter                        
+## # ... with 3 more rows
+```
+]
+
+]
+
+---
+
+## Resultado desejado
+
+
+```
+## # A tibble: 10 x 5
+##   name     profession   birth_year death_year known_for          
+##   &lt;chr&gt;    &lt;chr&gt;             &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;              
+## 1 Ada Lov~ Mathematici~         NA         NA first computer alg~
+## 2 Marie C~ Physicist a~         NA         NA theory of radioact~
+## 3 Janaki ~ Botanist           1897       1984 hybrid species, bi~
+## 4 Chien-S~ Physicist          1912       1997 confim and refine ~
+## 5 Katheri~ Mathematici~       1918       2020 calculations of or~
+## 6 Rosalin~ Chemist            1920       1958 &lt;NA&gt;               
+## # ... with 4 more rows
+```
+
+---
+
+## Data frames de entrada
+
+.pull-left[
+
+```r
+names(professions)
+```
+
+```
+## [1] "name"       "profession"
+```
+
+```r
+names(dates)
+```
+
+```
+## [1] "name"       "birth_year" "death_year"
+```
+
+```r
+names(works)
+```
+
+```
+## [1] "name"      "known_for"
+```
+]
+.pull-right[
+
+```r
+nrow(professions)
+```
+
+```
+## [1] 10
+```
+
+```r
+nrow(dates)
+```
+
+```
+## [1] 8
+```
+
+```r
+nrow(works)
+```
+
+```
+## [1] 9
+```
+]
+
+---
+
+class: middle
+
+# Junção de data frames
+
+---
+
+## Junção de data frames
+
+
+```r
+something_join(x, y)
+```
+
+- `left_join()`: todas as linhas de x
+- `right_join()`: todas as linhas de y
+- `full_join()`: todas as linhas de x e y
+- `semi_join()`: todas as linhas de x onde há valores correspondentes em y, mantendo apenas as linhas de x
+- `inner_join()`: todas as linhas de x onde há valores correspondentes em y, retornando toda combinação dos diferentes data frames no caso de múltiplas correspondências 
+- `anti_join()`: retorna todas as linhas de x onde não há valores correspondentes em y, sem duplicar linhas em x
+- ...
+ 
+---
+
+## Dados
+
+para os próximos slides...
+
+.pull-left[
+
+
+
+```r
+x
+```
+
+```
+## # A tibble: 3 x 2
+##      id value_x
+##   &lt;dbl&gt; &lt;chr&gt;  
+## 1     1 x1     
+## 2     2 x2     
+## 3     3 x3
+```
+]
+.pull-right[
+
+
+
+```r
+y
+```
+
+```
+## # A tibble: 3 x 2
+##      id value_y
+##   &lt;dbl&gt; &lt;chr&gt;  
+## 1     1 y1     
+## 2     2 y2     
+## 3     4 y4
+```
+]
+
+---
+
+## `left_join()`
+
+.pull-left[
+&lt;img src="img/left-join.gif" width="80%" style="background-color: #FDF6E3" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+
+```r
+left_join(x, y)
+```
+
+```
+## # A tibble: 3 x 3
+##      id value_x value_y
+##   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
+## 1     1 x1      y1     
+## 2     2 x2      y2     
+## 3     3 x3      &lt;NA&gt;
+```
+]
+
+---
+
+## `left_join()`
+
+
+```r
+professions %&gt;%
+* left_join(dates)
+```
+
+```
+## # A tibble: 10 x 4
+##   name              profession            birth_year death_year
+##   &lt;chr&gt;             &lt;chr&gt;                      &lt;dbl&gt;      &lt;dbl&gt;
+## 1 Ada Lovelace      Mathematician                 NA         NA
+## 2 Marie Curie       Physicist and Chemist         NA         NA
+## 3 Janaki Ammal      Botanist                    1897       1984
+## 4 Chien-Shiung Wu   Physicist                   1912       1997
+## 5 Katherine Johnson Mathematician               1918       2020
+## 6 Rosalind Franklin Chemist                     1920       1958
+## # ... with 4 more rows
+```
+
+---
+
+## `right_join()`
+
+.pull-left[
+&lt;img src="img/right-join.gif" width="80%" style="background-color: #FDF6E3" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+
+```r
+right_join(x, y)
+```
+
+```
+## # A tibble: 3 x 3
+##      id value_x value_y
+##   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
+## 1     1 x1      y1     
+## 2     2 x2      y2     
+## 3     4 &lt;NA&gt;    y4
+```
+]
+
+---
+
+## `right_join()`
+
+
+
+```r
+professions %&gt;%
+* right_join(dates)
+```
+
+```
+## # A tibble: 8 x 4
+##   name              profession    birth_year death_year
+##   &lt;chr&gt;             &lt;chr&gt;              &lt;dbl&gt;      &lt;dbl&gt;
+## 1 Janaki Ammal      Botanist            1897       1984
+## 2 Chien-Shiung Wu   Physicist           1912       1997
+## 3 Katherine Johnson Mathematician       1918       2020
+## 4 Rosalind Franklin Chemist             1920       1958
+## 5 Vera Rubin        Astronomer          1928       2016
+## 6 Gladys West       Mathematician       1930         NA
+## # ... with 2 more rows
+```
+
+---
+
+## `full_join()`
+
+.pull-left[
+&lt;img src="img/full-join.gif" width="80%" style="background-color: #FDF6E3" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+
+```r
+full_join(x, y)
+```
+
+```
+## # A tibble: 4 x 3
+##      id value_x value_y
+##   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
+## 1     1 x1      y1     
+## 2     2 x2      y2     
+## 3     3 x3      &lt;NA&gt;   
+## 4     4 &lt;NA&gt;    y4
+```
+]
+
+---
+
+## `full_join()`
+
+
+```r
+dates %&gt;%
+* full_join(works)
+```
+
+```
+## # A tibble: 10 x 4
+##   name       birth_year death_year known_for                     
+##   &lt;chr&gt;           &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;                         
+## 1 Janaki Am~       1897       1984 hybrid species, biodiversity ~
+## 2 Chien-Shi~       1912       1997 confim and refine theory of r~
+## 3 Katherine~       1918       2020 calculations of orbital mecha~
+## 4 Rosalind ~       1920       1958 &lt;NA&gt;                          
+## 5 Vera Rubin       1928       2016 existence of dark matter      
+## 6 Gladys We~       1930         NA mathematical modeling of the ~
+## # ... with 4 more rows
+```
+
+---
+
+## `inner_join()`
+
+.pull-left[
+&lt;img src="img/inner-join.gif" width="80%" style="background-color: #FDF6E3" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+
+```r
+inner_join(x, y)
+```
+
+```
+## # A tibble: 2 x 3
+##      id value_x value_y
+##   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
+## 1     1 x1      y1     
+## 2     2 x2      y2
+```
+]
+
+---
+
+## `inner_join()`
+
+
+```r
+dates %&gt;%
+* inner_join(works)
+```
+
+```
+## # A tibble: 7 x 4
+##   name        birth_year death_year known_for                    
+##   &lt;chr&gt;            &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;                        
+## 1 Janaki Amm~       1897       1984 hybrid species, biodiversity~
+## 2 Chien-Shiu~       1912       1997 confim and refine theory of ~
+## 3 Katherine ~       1918       2020 calculations of orbital mech~
+## 4 Vera Rubin        1928       2016 existence of dark matter     
+## 5 Gladys West       1930         NA mathematical modeling of the~
+## 6 Flossie Wo~       1947         NA first scientist to clone HIV~
+## # ... with 1 more row
+```
+
+---
+
+## `semi_join()`
+
+.pull-left[
+&lt;img src="img/semi-join.gif" width="80%" style="background-color: #FDF6E3" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+
+```r
+semi_join(x, y)
+```
+
+```
+## # A tibble: 2 x 2
+##      id value_x
+##   &lt;dbl&gt; &lt;chr&gt;  
+## 1     1 x1     
+## 2     2 x2
+```
+]
+
+---
+
+## `semi_join()`
+
+
+```r
+dates %&gt;%
+* semi_join(works)
+```
+
+```
+## # A tibble: 7 x 3
+##   name               birth_year death_year
+##   &lt;chr&gt;                   &lt;dbl&gt;      &lt;dbl&gt;
+## 1 Janaki Ammal             1897       1984
+## 2 Chien-Shiung Wu          1912       1997
+## 3 Katherine Johnson        1918       2020
+## 4 Vera Rubin               1928       2016
+## 5 Gladys West              1930         NA
+## 6 Flossie Wong-Staal       1947         NA
+## # ... with 1 more row
+```
+
+---
+
+## `anti_join()`
+
+.pull-left[
+&lt;img src="img/anti-join.gif" width="80%" style="background-color: #FDF6E3" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+
+```r
+anti_join(x, y)
+```
+
+```
+## # A tibble: 1 x 2
+##      id value_x
+##   &lt;dbl&gt; &lt;chr&gt;  
+## 1     3 x3
+```
+]
+
+---
+
+## `anti_join()`
+
+
+```r
+dates %&gt;%
+* anti_join(works)
+```
+
+```
+## # A tibble: 1 x 3
+##   name              birth_year death_year
+##   &lt;chr&gt;                  &lt;dbl&gt;      &lt;dbl&gt;
+## 1 Rosalind Franklin       1920       1958
+```
+
+---
+
+## Realizando a junção dos dados
+
+
+```r
+professions %&gt;%
+  left_join(dates) %&gt;%
+  left_join(works)
+```
+
+```
+## # A tibble: 10 x 5
+##   name     profession   birth_year death_year known_for          
+##   &lt;chr&gt;    &lt;chr&gt;             &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;              
+## 1 Ada Lov~ Mathematici~         NA         NA first computer alg~
+## 2 Marie C~ Physicist a~         NA         NA theory of radioact~
+## 3 Janaki ~ Botanist           1897       1984 hybrid species, bi~
+## 4 Chien-S~ Physicist          1912       1997 confim and refine ~
+## 5 Katheri~ Mathematici~       1918       2020 calculations of or~
+## 6 Rosalin~ Chemist            1920       1958 &lt;NA&gt;               
+## # ... with 4 more rows
+```
+
+---
+
+class: middle
+
+# Estudo de caso: dados de estudantes
+
+---
+
+## Dados de estudantes
+
+- Temos:
+  - Enrolment: dados oficiais de matrícula da universidade
+  - Survey: dados coletados junto aos estudantes sobre as disciplinas que estão cursando
+- Want: Resultados da pesquisa considerando informações de todos alunos matriculados
+
+--
+
+
+
+.pull-left[
+
+```r
+enrolment
+```
+
+```
+## # A tibble: 3 x 2
+##      id name           
+##   &lt;dbl&gt; &lt;chr&gt;          
+## 1     1 Dave Friday    
+## 2     2 Hermine        
+## 3     3 Sura Selvarajah
+```
+]
+.pull-right[
+
+```r
+survey
+```
+
+```
+## # A tibble: 4 x 3
+##      id name    username            
+##   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;               
+## 1     2 Hermine bakealongwithhermine
+## 2     3 Sura    surasbakes          
+## 3     4 Peter   peter_bakes         
+## 4     5 Mark    thebakingbuddha
+```
+]
+
+---
+
+## Dados dos estudantes
+
+.panelset[
+
+.panel[.panel-name[Em classes]
+
+```r
+enrolment %&gt;% 
+* left_join(survey, by = "id")
+```
+
+```
+## # A tibble: 3 x 4
+##      id name.x          name.y  username            
+##   &lt;dbl&gt; &lt;chr&gt;           &lt;chr&gt;   &lt;chr&gt;               
+## 1     1 Dave Friday     &lt;NA&gt;    &lt;NA&gt;                
+## 2     2 Hermine         Hermine bakealongwithhermine
+## 3     3 Sura Selvarajah Sura    surasbakes
+```
+]
+
+.panel[.panel-name[Pesquisa direta]
+
+```r
+enrolment %&gt;% 
+* anti_join(survey, by = "id")
+```
+
+```
+## # A tibble: 1 x 2
+##      id name       
+##   &lt;dbl&gt; &lt;chr&gt;      
+## 1     1 Dave Friday
+```
+]
+
+.panel[.panel-name[Abandonaram as disciplinas]
+
+```r
+survey %&gt;% 
+* anti_join(enrolment, by = "id")
+```
+
+```
+## # A tibble: 2 x 3
+##      id name  username       
+##   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;          
+## 1     4 Peter peter_bakes    
+## 2     5 Mark  thebakingbuddha
+```
+]
+
+]
+
+---
+
+class: middle
+
+# Estudo de caso: venda de alimentos
+
+---
+
+## Vendas de alimentos
+
+- Temos:
+  - Purchases: Uma linha por consumidor, por item.
+  - Prices: uma linha por item na loja
+- Want: receita total
+
+--
+
+
+
+.pull-left[
+
+```r
+purchases
+```
+
+```
+## # A tibble: 5 x 2
+##   customer_id item        
+##         &lt;dbl&gt; &lt;chr&gt;       
+## 1           1 bread       
+## 2           1 milk        
+## 3           1 banana      
+## 4           2 milk        
+## 5           2 toilet paper
+```
+]
+.pull-right[
+
+```r
+prices
+```
+
+```
+## # A tibble: 5 x 2
+##   item         price
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 avocado       0.5 
+## 2 banana        0.15
+## 3 bread         1   
+## 4 milk          0.8 
+## 5 toilet paper  3
+```
+]
+
+---
+
+## Venda de alimentos
+
+.panelset[
+
+.panel[.panel-name[Receita total]
+.pull-left[
+
+```r
+purchases %&gt;% 
+* left_join(prices)
+```
+
+```
+## # A tibble: 5 x 3
+##   customer_id item         price
+##         &lt;dbl&gt; &lt;chr&gt;        &lt;dbl&gt;
+## 1           1 bread         1   
+## 2           1 milk          0.8 
+## 3           1 banana        0.15
+## 4           2 milk          0.8 
+## 5           2 toilet paper  3
+```
+]
+.pull-right[
+
+```r
+purchases %&gt;% 
+  left_join(prices) %&gt;%
+* summarise(total_revenue = sum(price))
+```
+
+```
+## # A tibble: 1 x 1
+##   total_revenue
+##           &lt;dbl&gt;
+## 1          5.75
+```
+]
+]
+
+.panel[.panel-name[Receita por consumidor]
+
+.pull-left[
+
+```r
+purchases %&gt;% 
+  left_join(prices)
+```
+
+```
+## # A tibble: 5 x 3
+##   customer_id item         price
+##         &lt;dbl&gt; &lt;chr&gt;        &lt;dbl&gt;
+## 1           1 bread         1   
+## 2           1 milk          0.8 
+## 3           1 banana        0.15
+## 4           2 milk          0.8 
+## 5           2 toilet paper  3
+```
+]
+.pull-right[
+
+```r
+purchases %&gt;% 
+  left_join(prices) %&gt;%
+* group_by(customer_id) %&gt;%
+  summarise(total_revenue = sum(price))
+```
+
+```
+## # A tibble: 2 x 2
+##   customer_id total_revenue
+## *       &lt;dbl&gt;         &lt;dbl&gt;
+## 1           1          1.95
+## 2           2          3.8
+```
+]
+
+]
+
+]
+
+
+
+---
+
+class: middle
+
+#DÚVIDAS?
+
+**Tarefa da semana** 
+- Projeto integrador 2
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightLines": true,
+"highlightStyle": "solarized-light",
+"countIncrementalSlides": false,
+"slideNumberFormat": "<div class=\"progress-bar-container\">\n  <div class=\"progress-bar\" style=\"width: calc(%current% / %total% * 100%);\">\n  </div>\n</div>\n"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
